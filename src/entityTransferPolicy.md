@@ -1,31 +1,37 @@
-# Context
+$c[Comando deve estar no BDScript 2.]
+$c[troque APIKEY abaixo pela sua key da OpenAI. veja esse vídeo para saber como pegar sua key: https://youtu.be/VFBzh4YPOpU]
 
-- Bot Designer for Discord is a service provided by NilPointer Software.
-- "Our service" refers to "Bot Designer for Discord".
-- "Bot" refers to data held by BDFD describing the behaviour of a [Discord Bot](https://discord.com/developers/docs) on our service.
-- "Hosting time" refers to the time duration left of a singular bot during which it will be hosted by our service.
-- "Premium point" refers to BDFD premium in-app currency, granting users the ability for bots to have extended functionality for a limited time.
-- "Premium time" refers to the time duration left for a singular bot during which it can access the extended functionality.
-  Premium time is related, but not strictly linked, with hosting time. Premium time might end before hosting time, but not vice-versa.
-- "Promocode" or "promo code" refers to a randomly generated string of characters used to gain hosting or premium time.
-- "BDFD entity" or "entity" refers to any piece of data that is being held by BDFD, that ownership of it or itself can be transferred.
-  In this policy, "entity" mainly refers to bots, hosting and premium time, and premium points.
-- "Transfer request" refers to a request made by a user to BDFD developers for an entity transfer.
-  These requests can be made through a ticket on our [official Discord server](https://discord.gg/botdesigner).
+$var[key;APIKEY]
 
-# Policy
+$nomention
+$reply
+$botTyping
 
-- Entities that can be transferred can only be transferred through a transfer request by the user that holds ownership of that entity.
-- Requesting users must provide proof of ownership of the entities in question for the request to be granted.
-- BDFD Accounts can not be transferred in any way.
+$var[mensagem;$replaceText[$replaceText[$message;";';-1];
+; ;-1]]
 
-- Bots can only be transferred between BDFD accounts owned by a single user.
-- Bot after its transfer retains any hosting or premium time the bot in question had left.
-- A bot previously not assigned to any BDFD account can be transferred to an account of the user that holds ownership over the bot in question.
+$argsCheck[>1;> **Informe alguma pergunta para o chatgpt!**]
 
-- Premium points can be transferred between BDFD accounts owned by a single user.
-- Premium points can be donated for a giveaway promotion on our [official Discord server](https://discord.gg/botdesigner).
+$title[Chat GPT 3.5]
+$color[9A81FF]
+$httpAddHeader[Content-Type;application/json]
+$httpAddHeader[Authorization;Bearer $var[key]]
+$httpPost[https://api.openai.com/v1/chat/completions;{
+   "model": "gpt-3.5-turbo",
+   "max_tokens": 700,
+   "temperature": 0,
+   "top_p": 1,
+   "n": 1,
+   "messages": [{"role": "user", "content": "$var[mensagem]"}\]
+}]
 
-- Hosting and Premium time can only be transferred between bots owned by a single user.
-- Hosting and Premium time can not be transferred to a promocode.
-- Only premium time can be donated for a giveaway promotion on our [official Discord server](https://discord.gg/botdesigner).
+$if[$httpResult[error;message]==You exceeded your current quota, please check your plan and billing details.]
+$description[Olá, se você está vendo esta mensagem então o dono do comando colocou uma Chave que não possui créditos na OpenAI, você pode comprar créditos no mesmo site que criou a key.
+*OBS: antigamente a OpenAI dava uma quantia de créditos gratuito para usar, atualmente acho que isso não acontece mais.*]
+$elseif[$httpResult[error;message]==Incorrect API key provided: $var[key]. You can find your API key at https://platform.openai.com/account/api-keys.]
+$description[a key adicionada ao comando está errada.
+
+$httpResult[error;message]]
+$else
+$description[$httpResult[choices;0;message;content]]
+$endif
